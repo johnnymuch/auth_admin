@@ -15,13 +15,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+
+Route::get('user/activation/{token}', 'Auth\LoginController@activateUser')->name('user.activate');
 Auth::routes();
 
 Route::get('/home', 'HomeController@index');
 
-Route::GET('admin', 'Admin\LoginController@showLoginForm')->name('admin.login');
-Route::POST('admin','Admin\LoginController@login');
-Route::POST('admin-password/reset','Admin\ForgetPasswordController@sendRequestLinkEmail')->name('admin.password.email');
-Route::GET('admin-password/reset','Admin\ForgetPasswordController@showLinkRequestForm')->name('admin.password.request');
-Route::POST('admin-password/reset','Admin\ResetPasswordController@reset');
-Route::GET('admin-password/reset/{token}','Admin\$requestPasswordController@showResetForm')->name('admin.password.reset');
+Route::get('/users.confirmation/{token}', 'Auth\RegisterController@confirmation')->name('confirmation');

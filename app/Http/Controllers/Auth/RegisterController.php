@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
+use App\Mail\ConfirmationAccount;
+use App\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
-
 use Illuminate\Http\Request;
-use Mail;
+use Illuminate\Support\Facades\Mail;
+use Validator;
 
 class RegisterController extends Controller
 {
@@ -72,41 +73,21 @@ class RegisterController extends Controller
         ]);
     }
 
-    protected function register(Request $request)
+    public function register(Request $request)
     {
-        $input = $request->all();
-        $validator = $this->validator($input);
-
-        if($validator->passes()){
-            $data = $this->create($input)->toArray();
-
-            $data['token'] = str_random(25);
-
-            $user = User::find($data['id']);
-            $user->token = $data['token'];
-            $user->save();
-
-            Mail::send('mails.confirmation', $data, function($message) use($data){
-                $message->to($data['email']);
-                $message->subject('Registration Confirmation');
-            });
-            return redirect(route('login'))->with('status', 'Confirmation email has been send. please check your email');
-        }
-        return redirect(route('login'))->with('status', $validator->errors);
+        $this->validator($request->all())->validate();
+        event(new Registered($user = $this->create($request->all())));
+        
+        Mail::to($user->email)->send(new ConfirmationAccount($user));
+        
+        return back()->with('status', 'Please confirm your email address.');
+        // $this->guard()->login($user);
+        // return redirect($this->redirectPath());
     }
-
-    public function confirmation($token)
+    
+    public function confirmEmail($token)
     {
-        $user = User::where('token', $token)->first();
-
-        if(!is_null($user)) {
-            $user->confirmed = 1;
-            $user->token = '';
-            $user->save();
-            return redirect(route('login'))->with('status', 'Your Activation is completed');
-        }
-        return redirect(route('login'))->with('status','Something went wrong.');
+        User::whereToken($token)->firstOrFail()->confirmEmail();
+        return redirect('login')->with('status', 'You are now confirmed. Please login.');
     }
-
-  
 }

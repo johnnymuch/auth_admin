@@ -10,4 +10,6 @@ Route::get('/home', 'HomeController@index');
 Route::get('/register/confirm/{token}','RegisterController@confirmEmail');
 
 Route::get('/sendemail', 'SendingEmailController@sendingEmail');
-Route::get('sendmail', 'SendMailController@sendMail');
+Route::post('sendmail', 'SendMailController@sendMail');
+
+Route::get('editemail/{id}', 'SendMailController@editSending');

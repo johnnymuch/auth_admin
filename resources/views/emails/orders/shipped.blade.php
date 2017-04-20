@@ -11,7 +11,7 @@
 | java       	| Sample		| $900     |
 @endcomponent
 
-@component('mail::button', ['url' => ''])
+@component('mail::button', ['url' => url('editemail/'.$content['token'])])
 {{ $content['button'] }}
 @endcomponent
 
